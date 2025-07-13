@@ -16,17 +16,30 @@ pipeline {
 
         stage('Build') {
             steps {
-               sh 'echo "CYPRESS_INSTALL_BINARY=0" >> .env'
-               withEnv(['CYPRESS_INSTALL_BINARY=0']) {
-            sh 'rm -rf node_modules package-lock.json'
-            sh 'mvn clean install'
+                sh 'echo "CYPRESS_INSTALL_BINARY=0" >> .env'
+                withEnv(['CYPRESS_INSTALL_BINARY=0']) {
+                    sh 'rm -rf node_modules package-lock.json' 
+                    sh 'mvn clean install'
+                }
             }
         }
-        }
-        
+
         stage('Test') {
             steps {
-                sh 'mvn test'
+                sh 'mvn verify' 
+            }
+        }
+
+        stage('Show test errors') {
+            steps {
+             
+                sh '''
+                    if [ -d target/failsafe-reports ]; then
+                        echo "======= Failsafe Reports ======="
+                        cat target/failsafe-reports/*.txt || true
+                        echo "======= End Reports ======="
+                    fi
+                '''
             }
         }
 
@@ -38,6 +51,10 @@ pipeline {
     }
 
     post {
+        always {
+           
+            junit '**/target/failsafe-reports/*.xml'
+        }
         success {
             echo 'Pipeline terminé avec succès.'
         }
