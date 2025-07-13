@@ -15,6 +15,7 @@ pipeline {
 
         stage('Build Backend') {
             steps {
+                sh 'chmod +x ./mvnw'
                 sh './mvnw clean install -DskipTests'
             }
         }
