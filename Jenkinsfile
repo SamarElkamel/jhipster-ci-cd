@@ -9,7 +9,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/SamarElkamel/jhipster-ci-cd.git'
+                git branch: 'main', url: 'https://github.com/SamarElkamel/jhipster-ci-cd.git'
             }
         }
 
