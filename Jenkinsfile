@@ -18,7 +18,7 @@ pipeline {
             steps {
                 sh 'echo "CYPRESS_INSTALL_BINARY=0" >> .env'
                 withEnv(['CYPRESS_INSTALL_BINARY=0']) {
-                    sh 'rm -rf node_modules package-lock.json' 
+                    sh 'rm -rf node_modules package-lock.json' // Clean frontend deps
                     sh 'mvn clean install'
                 }
             }
@@ -26,18 +26,17 @@ pipeline {
 
         stage('Test') {
             steps {
-                sh 'mvn verify' 
+                sh 'mvn verify' // Runs unit + integration tests
             }
         }
 
-        stage('Show test errors') {
+        stage('Show Failsafe Errors (optional)') {
             steps {
-             
                 sh '''
                     if [ -d target/failsafe-reports ]; then
-                        echo "======= Failsafe Reports ======="
+                        echo "======= Failsafe Report Output ======="
                         cat target/failsafe-reports/*.txt || true
-                        echo "======= End Reports ======="
+                        echo "======= End Report ======="
                     fi
                 '''
             }
@@ -52,14 +51,28 @@ pipeline {
 
     post {
         always {
-           
-            junit '**/target/failsafe-reports/*.xml'
+            script {
+                def surefire = findFiles(glob: 'target/surefire-reports/*.xml')
+                def failsafe = findFiles(glob: 'target/failsafe-reports/*.xml')
+
+                if (surefire.length > 0) {
+                    junit 'target/surefire-reports/*.xml'
+                }
+                if (failsafe.length > 0) {
+                    junit 'target/failsafe-reports/*.xml'
+                }
+                if (surefire.length == 0 && failsafe.length == 0) {
+                    echo " Aucun fichier de test trouvé dans target/surefire-reports/ ni target/failsafe-reports/"
+                }
+            }
         }
+
         success {
-            echo 'Pipeline terminé avec succès.'
+            echo ' Pipeline terminé avec succès.'
         }
+
         failure {
-            echo 'Le pipeline a échoué.'
+            echo ' Le pipeline a échoué.'
         }
     }
 }
