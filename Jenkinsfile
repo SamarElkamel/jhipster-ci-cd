@@ -2,44 +2,37 @@ pipeline {
     agent any
 
     environment {
-        MAVEN_HOME = '/usr/share/maven'
-        JAVA_HOME = '/usr/lib/jvm/java-17-openjdk-amd64'
-        PATH = "${JAVA_HOME}/bin:${MAVEN_HOME}/bin:${env.PATH}"
+        CYPRESS_INSTALL_BINARY = '0'
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/SamarElkamel/jhipster-ci-cd.git', branch: 'main'
+                git 'https://github.com/SamarElkamel/jhipster-ci-cd.git'
             }
         }
 
         stage('Build') {
             steps {
-                sh 'echo "CYPRESS_INSTALL_BINARY=0" >> .env'
-                withEnv(['CYPRESS_INSTALL_BINARY=0']) {
+                sh 'echo "cypress_skip_binary_install=true" >> .npmrc'
                 sh 'mvn clean install'
             }
         }
-        }
-        
+
         stage('Test') {
             steps {
-                sh 'mvn test'
+                sh 'echo "Tests here..."'
             }
         }
 
         stage('Deploy') {
             steps {
-                sh 'echo "Déploiement fictif réussi."'
+                sh 'echo "Deploy stage..."'
             }
         }
     }
 
     post {
-        success {
-            echo 'Pipeline terminé avec succès.'
-        }
         failure {
             echo 'Le pipeline a échoué.'
         }
