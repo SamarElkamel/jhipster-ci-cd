@@ -16,9 +16,10 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh 'echo "CYPRESS_INSTALL_BINARY=0" >> .env'
-                withEnv(['CYPRESS_INSTALL_BINARY=0']) {
-                sh 'mvn clean install'
+               sh 'echo "CYPRESS_INSTALL_BINARY=0" >> .env'
+               withEnv(['CYPRESS_INSTALL_BINARY=0']) {
+            sh 'rm -rf node_modules package-lock.json'
+            sh 'mvn clean install'
             }
         }
         }
