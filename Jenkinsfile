@@ -16,6 +16,7 @@ pipeline {
 
         stage('Build') {
             steps {
+                sh 'echo "cypress_skip_binary_install=true" >> .npmrc'
                 sh 'mvn clean install'
             }
         }
