@@ -17,7 +17,14 @@ pipeline {
         stage('Build Backend') {
             steps {
                 sh 'chmod +x ./mvnw'
-                sh './mvnw clean install -DskipTests'
+                sh './mvnw clean compile'
+            }
+        }
+
+        stage('Test Backend') {
+            steps {
+                echo 'Running backend tests...'
+                sh './mvnw test'
             }
         }
 
@@ -30,6 +37,19 @@ pipeline {
                         sh 'npm install'
                         sh 'npm run webapp:build'
                     }
+                }
+            }
+        }
+
+
+        stage('Test Frontend') {
+            when {
+                expression { fileExists('src/main/webapp/jest.config.js') || fileExists('src/main/webapp/karma.conf.js') }
+            }
+            steps {
+                dir('src/main/webapp') {
+                    echo 'Running frontend tests...'
+                    sh 'npm test'
                 }
             }
         }
