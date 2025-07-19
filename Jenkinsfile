@@ -41,7 +41,6 @@ pipeline {
             }
         }
 
-
         stage('Test Frontend') {
             when {
                 expression { fileExists('src/main/webapp/jest.config.js') || fileExists('src/main/webapp/karma.conf.js') }
@@ -50,6 +49,15 @@ pipeline {
                 dir('src/main/webapp') {
                     echo 'Running frontend tests...'
                     sh 'npm test'
+                }
+            }
+        }
+
+       
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh './mvnw verify sonar:sonar'
                 }
             }
         }
