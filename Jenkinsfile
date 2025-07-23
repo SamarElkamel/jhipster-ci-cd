@@ -34,7 +34,7 @@ pipeline {
                     withEnv([
                         "PATH=${env.WORKSPACE}/target/node:${env.WORKSPACE}/target/node/node_modules/npm/bin:${env.PATH}"
                     ]) {
-                        sh 'sudo npm install'
+                        sh 'npm install'
                         sh 'npm run webapp:build'
                     }
                 }
@@ -56,7 +56,7 @@ pipeline {
     
         stage('Install Snyk') {
             steps {
-                sh 'npm install -g snyk'
+                sh 'npm install snyk'
             }
         }
 
@@ -72,7 +72,7 @@ pipeline {
        
         stage('Snyk Test Backend') {
             steps {
-                sh 'snyk test --all-projects --exclude=test'
+                sh 'npx snyk test --all-projects'
             }
         }
 
