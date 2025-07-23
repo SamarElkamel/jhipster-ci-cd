@@ -34,7 +34,7 @@ pipeline {
                     withEnv([
                         "PATH=${env.WORKSPACE}/target/node:${env.WORKSPACE}/target/node/node_modules/npm/bin:${env.PATH}"
                     ]) {
-                        sh 'npm install'
+                        sh 'sudo npm install'
                         sh 'npm run webapp:build'
                     }
                 }
