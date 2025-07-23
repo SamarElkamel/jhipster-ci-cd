@@ -85,19 +85,20 @@ pipeline {
         }
 
     
-        stage('SonarQube Analysis') {
-            steps {
-                withCredentials([string(credentialsId: 'ac0e0675-2d99-477d-9e66-7e52d5f62932', variable: 'SONAR_TOKEN')]) {
-                    sh """
-                      mvn sonar:sonar \\
-                      -Dsonar.projectKey=testdb \\
-                      -Dsonar.host.url=http://localhost:9000 \\
-                      -Dsonar.login=$SONAR_TOKEN \\
-                      -X
-                    """
-                }
-            }
+      stage('SonarQube Analysis') {
+    steps {
+        withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
+            sh """
+              mvn sonar:sonar \\
+              -Dsonar.projectKey=testdb \\
+              -Dsonar.host.url=http://localhost:9000 \\
+              -Dsonar.login=$SONAR_TOKEN \\
+              -X
+            """
         }
+    }
+}
+
     }
 
     post {
