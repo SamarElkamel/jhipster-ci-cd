@@ -53,22 +53,51 @@ pipeline {
             }
         }
 
-       
-    stage('SonarQube Analysis') {
-    steps {
-        withCredentials([string(credentialsId: 'ac0e0675-2d99-477d-9e66-7e52d5f62932', variable: 'SONAR_TOKEN')]) {
-            sh """
-              mvn sonar:sonar \
-              -Dsonar.projectKey=testdb \
-              -Dsonar.host.url=http://localhost:9000 \
-              -Dsonar.login=$SONAR_TOKEN \
-              -X
-            """
+    
+        stage('Install Snyk') {
+            steps {
+                sh 'npm install -g snyk'
+            }
         }
-    }
-}
 
+        
+        stage('Snyk Auth') {
+            steps {
+                withCredentials([string(credentialsId: 'SNYK_TOKEN', variable: 'SNYK_TOKEN')]) {
+                    sh 'snyk auth $SNYK_TOKEN'
+                }
+            }
+        }
 
+       
+        stage('Snyk Test Backend') {
+            steps {
+                sh 'snyk test --all-projects --exclude=test'
+            }
+        }
+
+        stage('Snyk Test Frontend') {
+            steps {
+                dir('src/main/webapp') {
+                    sh 'snyk test'
+                }
+            }
+        }
+
+    
+        stage('SonarQube Analysis') {
+            steps {
+                withCredentials([string(credentialsId: 'ac0e0675-2d99-477d-9e66-7e52d5f62932', variable: 'SONAR_TOKEN')]) {
+                    sh """
+                      mvn sonar:sonar \\
+                      -Dsonar.projectKey=testdb \\
+                      -Dsonar.host.url=http://localhost:9000 \\
+                      -Dsonar.login=$SONAR_TOKEN \\
+                      -X
+                    """
+                }
+            }
+        }
     }
 
     post {
