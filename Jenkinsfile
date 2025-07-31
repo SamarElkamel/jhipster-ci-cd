@@ -85,20 +85,20 @@ pipeline {
         }
 
         stage('Docker Build') {
-           steps {
-               script {
-            dockerImage = docker.build("my-jhipster-app")
-        }
+    steps {
+        sh 'docker build -t my-jhipster-app .'
     }
 }
 
-       stage('Docker Push') {
-           steps {
-               script {
-            docker.withRegistry('https://index.docker.io/v1/', 'DOCKER_HUB_CREDENTIALS') {
-                dockerImage.push("${env.BUILD_NUMBER}")
-                dockerImage.push("latest")
-            }
+
+      stage('Docker Push') {
+    steps {
+        withCredentials([usernamePassword(credentialsId: 'DOCKER_HUB_CREDENTIALS', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+            sh '''
+                echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                docker tag my-jhipster-app $DOCKER_USER/my-jhipster-app:latest
+                docker push $DOCKER_USER/my-jhipster-app:latest
+            '''
         }
     }
 }
