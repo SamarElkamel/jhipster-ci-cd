@@ -84,6 +84,25 @@ pipeline {
             }
         }
 
+        stage('Docker Build') {
+           steps {
+               script {
+            dockerImage = docker.build("my-jhipster-app")
+        }
+    }
+}
+
+       stage('Docker Push') {
+           steps {
+               script {
+            docker.withRegistry('https://index.docker.io/v1/', 'DOCKER_HUB_CREDENTIALS') {
+                dockerImage.push("${env.BUILD_NUMBER}")
+                dockerImage.push("latest")
+            }
+        }
+    }
+}
+
     
       stage('SonarQube Analysis') {
     steps {
