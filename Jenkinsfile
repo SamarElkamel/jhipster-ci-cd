@@ -92,7 +92,7 @@ pipeline {
 
      stage('Trivy Scan') {
     steps {
-        sh 'trivy image --exit-code 0 --severity HIGH,CRITICAL my-jhipster-app'
+        sh 'trivy image --timeout 10m --exit-code 0 --severity HIGH,CRITICAL my-jhipster-app'
     }
 }
 
