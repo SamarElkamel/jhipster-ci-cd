@@ -124,6 +124,25 @@ pipeline {
     }
 }
 
+stage('Deploy to AKS') {
+  steps {
+    withCredentials([azureServicePrincipal(credentialsId: 'AZURE_CREDENTIALS')]) {
+      sh '''
+        az login --service-principal \
+          --username $AZURE_CLIENT_ID \
+          --password $AZURE_CLIENT_SECRET \
+          --tenant $AZURE_TENANT_ID
+
+        az account set --subscription $AZURE_SUBSCRIPTION_ID
+
+        az aks get-credentials --resource-group rg-aks-demo --name aks-demo-cluster --overwrite-existing
+        
+        kubectl apply -f k8s/deployment.yaml
+      '''
+    }
+  }
+}
+
     }
 
     post {
