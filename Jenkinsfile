@@ -144,10 +144,10 @@ pipeline {
 
     post {
         failure {
-            echo '❌ Le pipeline a échoué.'
+            echo ' Le pipeline a échoué.'
         }
         success {
-            echo '✅ Le pipeline a réussi.'
+            echo ' Le pipeline a réussi.'
         }
     }
 }
