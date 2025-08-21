@@ -53,14 +53,12 @@ pipeline {
             }
         }
 
-    
         stage('Install Snyk') {
             steps {
                 sh 'npm install snyk'
             }
         }
 
-        
         stage('Snyk Auth') {
             steps {
                 withCredentials([string(credentialsId: 'SNYK_TOKEN', variable: 'SNYK_TOKEN')]) {
@@ -69,7 +67,6 @@ pipeline {
             }
         }
 
-       
         stage('Snyk Test Backend') {
             steps {
                 sh 'npx snyk test --all-projects || true'
@@ -85,68 +82,69 @@ pipeline {
         }
 
         stage('Docker Build') {
-    steps {
-        sh 'docker build -t my-jhipster-app .'
-    }
-}
-
-     stage('Trivy Scan') {
-    steps {
-        sh 'trivy image --timeout 10m --exit-code 0 --severity HIGH,CRITICAL my-jhipster-app'
-    }
-}
-
-
-      stage('Docker Push') {
-    steps {
-        withCredentials([usernamePassword(credentialsId: 'DOCKER_HUB_CREDENTIALS', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-            sh '''
-                echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                docker tag my-jhipster-app $DOCKER_USER/my-jhipster-app:latest
-                docker push $DOCKER_USER/my-jhipster-app:latest
-            '''
+            steps {
+                sh 'docker build -t my-jhipster-app .'
+            }
         }
-    }
-}
 
-    
-      stage('SonarQube Analysis') {
-    steps {
-        withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
-            sh """
-              mvn sonar:sonar \\
-              -Dsonar.projectKey=testdb \\
-              -Dsonar.host.url=http://localhost:9000 \\
-              -Dsonar.login=$SONAR_TOKEN \\
-              -X
-            """
+        stage('Trivy Scan') {
+            steps {
+                sh 'trivy image --timeout 10m --exit-code 0 --severity HIGH,CRITICAL my-jhipster-app'
+            }
         }
-    }
-}
 
-stage('Deploy to AKS') {
-  steps {
-    withCredentials([usernamePassword(credentialsId: 'AZURE_USER', usernameVariable: 'AZ_USER', passwordVariable: 'AZ_PASS')]) {
-      sh '''
-        az login -u "$AZ_USER" -p "$AZ_PASS"
-        az account set --subscription 63bd1502-a89e-4063-a4e7-a80b85b07c59
-        az aks get-credentials --resource-group rg-aks-demo --name aks-demo-cluster --overwrite-existing
-        kubectl apply -f k8s/deployment.yaml
-      '''
-    }
-  }
-}
+        stage('Docker Push') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'DOCKER_HUB_CREDENTIALS', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh '''
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                        docker tag my-jhipster-app $DOCKER_USER/my-jhipster-app:latest
+                        docker push $DOCKER_USER/my-jhipster-app:latest
+                    '''
+                }
+            }
+        }
 
+        stage('SonarQube Analysis') {
+            steps {
+                withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
+                    sh """
+                      mvn sonar:sonar \\
+                      -Dsonar.projectKey=testdb \\
+                      -Dsonar.host.url=http://localhost:9000 \\
+                      -Dsonar.login=$SONAR_TOKEN \\
+                      -X
+                    """
+                }
+            }
+        }
 
+        stage('Update GitOps Repository') {
+            steps {
+                dir('gitops-repo') {
+                    
+                    sh 'git clone https://github.com/SamarElkamel/jhipster-gitops .'
 
+                
+                    sh '''
+                        sed -i "s|image: .*|image: $DOCKER_USER/my-jhipster-app:latest|" manifests/deployment.yaml
+                        git config user.email "ci-bot@example.com"
+                        git config user.name "CI Bot"
+                        git add manifests/deployment.yaml
+                        git commit -m "Update image to $DOCKER_USER/my-jhipster-app:latest [ci skip]" || echo "No changes to commit"
+                        git push origin main
+                    '''
+                }
+            }
+        }
     }
 
     post {
         failure {
-            echo 'Le pipeline a échoué.'
+            echo '❌ Le pipeline a échoué.'
         }
         success {
-            echo 'Le pipeline a réussi.'
+            echo '✅ Le pipeline a réussi.'
         }
     }
 }
