@@ -130,10 +130,10 @@ pipeline {
 
                 
                     sh '''
-                        sed -i "s|image: .*|image: $DOCKER_USER/my-jhipster-app:latest|" manifests/deployment.yaml
+                        sed -i "s|image: .*|image: $DOCKER_USER/my-jhipster-app:latest|" manifests/jhipster-app.yaml
                         git config user.email "ci-bot@example.com"
                         git config user.name "CI Bot"
-                        git add manifests/deployment.yaml
+                        git add manifests/djhipster-app.yaml
                         git commit -m "Update image to $DOCKER_USER/my-jhipster-app:latest [ci skip]" || echo "No changes to commit"
                         git push origin main
                     '''
