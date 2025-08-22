@@ -8,11 +8,14 @@ services:
       - '8080:8080'
     depends_on:
       - db
+      - logstash
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/mydb
       SPRING_DATASOURCE_USERNAME: user
       SPRING_DATASOURCE_PASSWORD: password
       SPRING_PROFILES_ACTIVE: prod
+      LOGSTASH_HOST: logstash
+      LOGSTASH_PORT: 5000
 
   db:
     image: postgres:15
@@ -23,3 +26,32 @@ services:
       POSTGRES_PASSWORD: password
     ports:
       - '5432:5432'
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    ports:
+      - '9200:9200'
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.15.0
+    container_name: logstash
+    ports:
+      - '5000:5000'
+    volumes:
+      - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    depends_on:
+      - elasticsearch
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.15.0
+    container_name: kibana
+    ports:
+      - '5601:5601'
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
