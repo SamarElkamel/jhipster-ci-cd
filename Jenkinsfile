@@ -140,7 +140,9 @@ pipeline {
     }
 }
 
-stage('Deploy App + ELK') {
+
+
+stage('ELK') {
     steps {
         sh '''
             echo "Arrêt des conteneurs existants si présents..."
@@ -151,6 +153,7 @@ stage('Deploy App + ELK') {
         '''
     }
 }
+
 
     }
 
