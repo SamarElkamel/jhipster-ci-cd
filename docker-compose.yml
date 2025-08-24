@@ -5,7 +5,7 @@ services:
     build: .
     container_name: jhipster-app
     ports:
-      - '8080:8080'
+      - '8082:8080'
     depends_on:
       - db
       - logstash
