@@ -142,18 +142,6 @@ pipeline {
 
 
 
-stage('ELK') {
-    steps {
-        sh '''
-            echo "Arrêt des conteneurs existants si présents..."
-            docker-compose down || true
-
-            echo "Démarrage de l'application + DB + ELK..."
-            docker-compose up -d --build
-        '''
-    }
-}
-
 
     }
 
